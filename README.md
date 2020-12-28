@@ -6,6 +6,8 @@ This is a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/
 
 ## Pipeline architecture
 
+![Diagram of how the pipeline is structured](architecture.png)
+
 ## Template parameters
 
 ## Setup
