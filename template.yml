@@ -1,5 +1,48 @@
 # Template resources
 Resources:
+  # S3 bucket where artifacts will be stored
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join
+        - ""
+        - - Ref: ProjectName
+          - -artifacts
+      Tags:
+        - Key: Project
+          Value:
+            Ref: ProjectName
+
+  # S3 bucket where the backend will be stored
+  BackendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join
+        - ""
+        - - Ref: ProjectName
+          - -backend
+      Tags:
+        - Key: Project
+          Value:
+            Ref: ProjectName
+
+  # S3 bucket where the frontend will be stored
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join
+        - ""
+        - - Ref: ProjectName
+          - -frontend
+      Tags:
+        - Key: Project
+          Value:
+            Ref: ProjectName
+      WebsiteConfiguration:
+        IndexDocument:
+          Ref: IndexDocumentName
+        ErrorDocument:
+          Ref: ErrorDocumentName
 
 # Template parameters
 Parameters:
@@ -28,7 +71,8 @@ Parameters:
   # Then name of the project
   ProjectName:
     Type: String
-    Description: Enter what you want to call this project. Used for naming/tagging resources
+    Description: Enter what you want to call this project. Must be lowercase Used for naming/tagging resources
+    AllowedPattern: "[a-z0-9_-]+"
 
   # Github username
   RepositoryOwner:
