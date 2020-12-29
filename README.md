@@ -4,7 +4,7 @@ This is a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/
 
 ## Resources created
 
-The template created a total of 7 resources, which are listed below:
+The template creates a total of 7 resources, which are listed below:
 
 -   3 [S3](https://aws.amazon.com/s3/) Buckets - 1 for storing artifacts used by the CodePipeline pipeline, one for storing the frontend after building it, and one for storing backend code (for example zipped Lambdas)
 
