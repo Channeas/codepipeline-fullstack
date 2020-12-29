@@ -1,0 +1,60 @@
+# Template resources
+Resources:
+
+# Template parameters
+Parameters:
+  # Branch name
+  BranchName:
+    Type: String
+    Description: Enter the branch name that you want to be used for the build
+
+  # CodeStar Connection
+  CodeStarConnection:
+    Type: String
+    Description: Enter the ARN of the CodeStar connection you want to use
+
+  # Name of the error file
+  ErrorDocumentName:
+    Type: String
+    Default: error.html
+    Description: Enter the name (or path) of your error file
+
+  # Name of the index file
+  IndexDocumentName:
+    Type: String
+    Default: index.html
+    Description: Enter the name (or path) of your index file
+
+  # Then name of the project
+  ProjectName:
+    Type: String
+    Description: Enter what you want to call this project. Used for naming/tagging resources
+
+  # Github username
+  RepositoryOwner:
+    Type: String
+    Description: Enter the git provider username of the repository owner
+
+  # Github repository name
+  RepositoryName:
+    Type: String
+    Description: Enter the name of the repository you want to build
+
+# Template metadata
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Parameters:
+          - ProjectName
+      - Label:
+          default: "Git configuration"
+        Parameters:
+          - CodeStarConnection
+          - RepositoryOwner
+          - RepositoryName
+          - BranchName
+      - Label:
+          default: "Hosting configuration"
+        Parameters:
+          - IndexDocumentName
+          - ErrorDocumentName
