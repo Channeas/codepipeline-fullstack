@@ -6,7 +6,7 @@ This is a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/
 
 The template creates a total of 7 resources, which are listed below:
 
--   3 [S3](https://aws.amazon.com/s3/) Buckets - 1 for storing artifacts used by the CodePipeline pipeline, one for storing the frontend after building it, and one for storing backend code (for example zipped Lambdas)
+-   3 [S3](https://aws.amazon.com/s3/) buckets - 1 for storing artifacts used by the CodePipeline pipeline, 1 for storing the frontend after building it, and 1 for storing backend code (for example zipped Lambdas)
 
 -   1 [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that retrieves the source code from the git provider, and then builds the frontend and backend
 
