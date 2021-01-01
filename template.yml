@@ -16,7 +16,7 @@ Resources:
       LifecycleConfiguration:
         Rules:
           - ExpirationInDays:
-              Ref: ArtifactLifeInDays
+              Ref: ArtifactLifetimeInDays
             Status: Enabled
 
   # S3 bucket where the backend will be stored
@@ -104,6 +104,7 @@ Metadata:
     ParameterGroups:
       - Parameters:
           - ProjectName
+          - ArtifactLifetimeInDays
       - Label:
           default: "Git configuration"
         Parameters:
