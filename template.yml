@@ -12,6 +12,12 @@ Resources:
         - Key: Project
           Value:
             Ref: ProjectName
+      # Determines how long artifacts are stored
+      LifecycleConfiguration:
+        Rules:
+          - ExpirationInDays:
+              Ref: ArtifactLifeInDays
+            Status: Enabled
 
   # S3 bucket where the backend will be stored
   BackendBucket:
@@ -46,6 +52,14 @@ Resources:
 
 # Template parameters
 Parameters:
+  # How many days artifacts are stored
+  ArtifactLifetimeInDays:
+    Type: Number
+    Description: Specify how many days you want artifacts to be stored for (1->180 days accepted)
+    Default: 30
+    MaxValue: 180
+    MinValue: 1
+
   # Branch name
   BranchName:
     Type: String
