@@ -4,13 +4,13 @@ This is a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/
 
 ## Resources created
 
-The template creates a total of 7 resources, which are listed below:
+The template creates a total of 8 resources, which are listed below:
 
 -   3 [S3](https://aws.amazon.com/s3/) buckets - 1 for storing artifacts used by the CodePipeline pipeline, 1 for storing the frontend after building it, and 1 for storing backend code (for example zipped Lambdas)
 
--   1 [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that retrieves the source code from the git provider, and then builds the frontend and backend
+-   2 [CodeBuild](https://aws.amazon.com/codebuild/) builders. One is used to build the frontend, and the other one to build the backend
 
--   1 [CodeBuild](https://aws.amazon.com/codebuild/) builder that is used in the pipeline to build the frontend and backend
+-   1 [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that retrieves the source code from the git provider, and then builds the frontend and backend
 
 -   1 [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution that serves the frontend
 

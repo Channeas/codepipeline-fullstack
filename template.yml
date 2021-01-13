@@ -50,6 +50,131 @@ Resources:
         ErrorDocument:
           Ref: ErrorDocumentName
 
+  # CodeBuild project for the backend
+  BackendBuilder:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+
+      # Build environment
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        Type: LINUX_CONTAINER
+
+      # Name of the CodeBuild project
+      Name: !Join
+        - ""
+        - - Ref: ProjectName
+          - "-backend-builder"
+
+      # Queuing timeout
+      QueuedTimeoutInMinutes: 20
+
+      # IAM role for the builder
+      ServiceRole: !GetAtt [BuildersRole, Arn]
+
+      Source:
+        BuildSpec: backend/buildspec.yml
+        Type: CODEPIPELINE
+      Tags:
+        - Key: Project
+          Value:
+            Ref: ProjectName
+
+      # Building timeout
+      TimeoutInMinutes: 5
+
+  # CodeBuild project for the frontend
+  FrontendBuilder:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+
+      # Build environment
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        Type: LINUX_CONTAINER
+        # Environment variable used for clearing the bucket before deployment
+        EnvironmentVariables:
+          - Name: OUTPUT_BUCKET
+            Value: !Ref FrontendBucket
+            Type: PLAINTEXT
+
+      # Name of the CodeBuild project
+      Name: !Join
+        - ""
+        - - Ref: ProjectName
+          - "-frontend-builder"
+
+      # Queuing timeout
+      QueuedTimeoutInMinutes: 20
+
+      # IAM role for the builder
+      ServiceRole: !GetAtt [BuildersRole, Arn]
+
+      Source:
+        BuildSpec: frontend/buildspec.yml
+        Type: CODEPIPELINE
+      Tags:
+        - Key: Project
+          Value:
+            Ref: ProjectName
+
+      # Building timeout
+      TimeoutInMinutes: 5
+
+  # IAM role for the builders
+  BuildersRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ["sts:AssumeRole"]
+            Effect: Allow
+            Principal:
+              Service: [codebuild.amazonaws.com]
+
+      # Builder permissions
+      Policies:
+        - PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # Cloudwatch permissions
+              - Effect: "Allow"
+                Action:
+                  - "cloudwatch:*"
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "*"
+              # Permissions for retrieving the source artifact
+              - Effect: "Allow"
+                Action:
+                  - "s3:PutObject"
+                  - "s3:GetObject"
+                  - "s3:GetObjectVersion"
+                Resource: !Join
+                  - ""
+                  - - !GetAtt [ArtifactBucket, Arn]
+                    - /*
+              # Permissions for clearing the output bucket
+              - Effect: "Allow"
+                Action:
+                  - "s3:ListBucket"
+                Resource: !GetAtt [FrontendBucket, Arn]
+              - Effect: "Allow"
+                Action:
+                  - "s3:DeleteObject"
+                Resource: !Join
+                  - ""
+                  - - !GetAtt [FrontendBucket, Arn]
+                    - /*
+
 # Template parameters
 Parameters:
   # How many days artifacts are stored
