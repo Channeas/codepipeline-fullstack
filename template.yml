@@ -50,6 +50,31 @@ Resources:
         ErrorDocument:
           Ref: ErrorDocumentName
 
+  # Actual pipeline
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      # Artifact store location
+      ArtifactStore:
+        Type: S3
+        Location:
+          Ref: ArtifactBucket
+
+      # Add the IAM role to the bucket
+      RoleArn: !GetAtt [PipelineRole, Arn]
+
+      # Stages
+      Stages:
+        # TODO
+
+      # Pipeline name
+      Name:
+        Ref: PipelineName
+      # Tags
+      Tags:
+        - Key: Project
+          Value: ProjectName
+
   # CodeBuild project for the backend
   BackendBuilder:
     Type: AWS::CodeBuild::Project
@@ -174,6 +199,56 @@ Resources:
                   - ""
                   - - !GetAtt [FrontendBucket, Arn]
                     - /*
+
+  # IAM role for the pipeline
+  PipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ["sts:AssumeRole"]
+            Effect: Allow
+            Principal:
+              Service: [codepipeline.amazonaws.com]
+
+      # Pipeline permissions
+      Policies:
+        - PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # Codestar permissions
+              - Effect: "Allow"
+                Action:
+                  - "codestar-connections:UseConnection"
+                Resource: !Ref CodeStarConnection
+              # Bucket permissions
+              - Effect: "Allow"
+                Action:
+                  - "s3:*"
+                Resource:
+                  - !Join
+                    - ""
+                    - - !GetAtt [ArtifactBucket, Arn]
+                      - /*
+                  - !Join
+                    - ""
+                    - - !GetAtt [BackendBucket, Arn]
+                      - /*
+                  - !Join
+                    - ""
+                    - - !GetAtt [FrontendBucket, Arn]
+                      - /*
+              # Codebuild permissions
+              - Effect: "Allow"
+                Action:
+                  - "codebuild:StartBuild"
+                  - "codebuild:StartBuildBatch"
+                  - "codebuild:BatchGetBuilds"
+                  - "codebuild:BatchGetBuildBatches"
+                Resource:
+                  - !GetAtt [BackendBuilder, Arn]
+                  - !GetAtt [FrontendBuilder, Arn]
 
 # Template parameters
 Parameters:
