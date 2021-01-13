@@ -210,7 +210,7 @@ Parameters:
   # Then name of the project
   ProjectName:
     Type: String
-    Description: Enter what you want to call this project. Must be lowercase Used for naming/tagging resources
+    Description: Enter what you want to call this project. Must be lowercase. Used for naming/tagging resources
     AllowedPattern: "[a-z0-9_-]+"
 
   # Github username
