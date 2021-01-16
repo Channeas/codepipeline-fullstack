@@ -107,6 +107,35 @@ Resources:
               # Action name
               Name: Get_source
 
+        # Stage for building the code loaded from Github
+        - Name: Build
+          Actions:
+            # Action that builds the frontend
+            - ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+
+              # Connect the build project
+              Configuration:
+                ProjectName: !Join
+                  - ""
+                  - - Ref: ProjectName
+                    - "-frontend-builder"
+                PrimarySource: SourceArtifact
+
+              # Get the source code artifact
+              InputArtifacts:
+                - Name: SourceArtifact
+
+              # Output the build files
+              OutputArtifacts:
+                - Name: FrontendBuild
+
+              # Action name
+              Name: Build_frontend
+
       # Pipeline name
       Name:
         Ref: PipelineName
