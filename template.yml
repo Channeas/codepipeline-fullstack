@@ -157,8 +157,10 @@ Resources:
               Name: Deploy_build
 
       # Pipeline name
-      Name:
-        Ref: PipelineName
+      Name: !Join
+        - ""
+        - - Ref: ProjectName
+          - "-pipeline"
       # Tags
       Tags:
         - Key: Project
