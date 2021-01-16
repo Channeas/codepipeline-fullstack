@@ -77,7 +77,35 @@ Resources:
 
       # Stages
       Stages:
-        # TODO
+        # Stage for loading code from Github
+        - Name: Source
+          Actions:
+            # Determine the action type. See https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-pipeline-structure.html#actions-valid-providers
+            - ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: "1"
+
+              # Connect the pipeline to the git provider. The CodeStar connection could, as of right now, be either Github or Bitbucket. See documentation for latest info: https://docs.aws.amazon.com/codepipeline/latest/userguide/action-reference-CodestarConnectionSource.html
+              Configuration:
+                ConnectionArn:
+                  Ref: CodeStarConnection
+                FullRepositoryId: !Join
+                  - ""
+                  - - Ref: RepositoryOwner
+                    - "/"
+                    - Ref: RepositoryName
+                BranchName:
+                  Ref: BranchName
+                OutputArtifactFormat: "CODE_ZIP"
+
+              # Name the output of this action. Note that this is the name that will be referenced further down the pipeline
+              OutputArtifacts:
+                - Name: SourceArtifact
+
+              # Action name
+              Name: Get_source
 
       # Pipeline name
       Name:
