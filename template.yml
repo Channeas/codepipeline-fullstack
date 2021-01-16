@@ -136,6 +136,28 @@ Resources:
               # Action name
               Name: Build_frontend
 
+        # Stage for deploying the build
+        - Name: Deploy
+          Actions:
+            - ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: S3
+                Version: 1
+
+              # Configure where to deploy
+              Configuration:
+                BucketName:
+                  Ref: FrontendBucket
+                Extract: True
+
+              # Get the artifact produced in the above stage
+              InputArtifacts:
+                - Name: BuildFiles
+
+              # Action name
+              Name: Deploy_build
+
       # Pipeline name
       Name:
         Ref: PipelineName
