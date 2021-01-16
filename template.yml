@@ -56,6 +56,60 @@ Resources:
         ErrorDocument:
           Ref: ErrorDocumentName
 
+  # ░█████╗░██╗░░░░░░█████╗░██╗░░░██╗██████╗░███████╗██████╗░░█████╗░███╗░░██╗████████╗
+  # ██╔══██╗██║░░░░░██╔══██╗██║░░░██║██╔══██╗██╔════╝██╔══██╗██╔══██╗████╗░██║╚══██╔══╝
+  # ██║░░╚═╝██║░░░░░██║░░██║██║░░░██║██║░░██║█████╗░░██████╔╝██║░░██║██╔██╗██║░░░██║░░░
+  # ██║░░██╗██║░░░░░██║░░██║██║░░░██║██║░░██║██╔══╝░░██╔══██╗██║░░██║██║╚████║░░░██║░░░
+  # ╚█████╔╝███████╗╚█████╔╝╚██████╔╝██████╔╝██║░░░░░██║░░██║╚█████╔╝██║░╚███║░░░██║░░░
+  # ░╚════╝░╚══════╝░╚════╝░░╚═════╝░╚═════╝░╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═╝░░╚══╝░░░╚═╝░░░
+  # CloudFront Distribution serving the frontend
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - Ref: DomainName
+        # Distribution cache behaviors.
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+          # Note: This is the Managed-CachingOptimized policy
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          TargetOriginId: S3-origin
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: True
+        HttpVersion: http2
+        Origins:
+          # The frontend S3 bucket
+          - DomainName: !GetAtt [FrontendBucket, DomainName]
+            Id: S3-origin
+            S3OriginConfig:
+              OriginAccessIdentity: !Join
+                - ""
+                - - "origin-access-identity/cloudfront/"
+                  - Ref: FrontendOriginAccessIdentity
+        PriceClass:
+          Ref: CloudFrontPriceClass
+        # SSL certificate
+        ViewerCertificate:
+          AcmCertificateArn:
+            Ref: CloudFrontCertificateARN
+          MinimumProtocolVersion: TLSv1.2_2019
+          SslSupportMethod: sni-only
+      Tags:
+        - Key: Project
+          Value:
+            Ref: ProjectName
+
+  # CloudFront Origin Access Identity (OAI) for accessing the frontend S3 bucket
+  FrontendOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: Origin Access Identity used by the distribution to reach the frontend bucket
+
   # ██████╗░██╗██████╗░███████╗██╗░░░░░██╗███╗░░██╗███████╗
   # ██╔══██╗██║██╔══██╗██╔════╝██║░░░░░██║████╗░██║██╔════╝
   # ██████╔╝██║██████╔╝█████╗░░██║░░░░░██║██╔██╗██║█████╗░░
@@ -255,6 +309,32 @@ Resources:
   # ██║██╔══██║██║╚██╔╝██║
   # ██║██║░░██║██║░╚═╝░██║
   # ╚═╝╚═╝░░╚═╝╚═╝░░░░░╚═╝
+  # Bucket policy for the frontend bucket
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: FrontendBucket
+      PolicyDocument:
+        Id: !Join
+          - ""
+          - - Ref: FrontendBucket
+            - "_policy"
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Join
+                - ""
+                - - "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity "
+                  - Ref: FrontendOriginAccessIdentity
+            Action: "s3:GetObject"
+            Resource: !Join
+              - ""
+              - - "arn:aws:s3:::"
+                - Ref: FrontendBucket
+                - /*
+
   # IAM role for the builders
   BuildersRole:
     Type: AWS::IAM::Role
@@ -373,6 +453,11 @@ Parameters:
     Type: String
     Description: Enter the ARN of the CodeStar connection you want to use
 
+  # Domain name used by the CloudFront distribution
+  DomainName:
+    Type: String
+    Description: Enter the domain name to be used by the CloudFront Distribution
+
   # Name of the error file
   ErrorDocumentName:
     Type: String
@@ -384,6 +469,21 @@ Parameters:
     Type: String
     Default: index.html
     Description: Enter the name (or path) of your index file
+
+  # ARN of the SSL certificate to be used by the CloudFront Distribution
+  CloudFrontCertificateARN:
+    Type: String
+    Description: Enter the ARN of the Amazon Certificate Manager certificate to be used by the CloudFront Distribution
+
+  # CloudFront distribution price class
+  CloudFrontPriceClass:
+    Type: String
+    Default: PriceClass_100
+    AllowedValues:
+      - PriceClass_100
+      - PriceClass_200
+      - PriceClass_All
+    Description: Enter the allowed price class for the CloudFront Distribution
 
   # Then name of the project
   ProjectName:
@@ -418,5 +518,14 @@ Metadata:
       - Label:
           default: "Hosting configuration"
         Parameters:
+          - DomainName
+          - CloudFrontCertificateARN
+          - CloudFrontPriceClass
           - IndexDocumentName
           - ErrorDocumentName
+
+# Template outputs
+Outputs:
+  CloudFrontURL:
+    Description: The URL of the CloudFront Distribution. Point your DNS to this
+    Value: !GetAtt [Distribution, DomainName]
