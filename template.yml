@@ -119,10 +119,8 @@ Resources:
 
               # Connect the build project
               Configuration:
-                ProjectName: !Join
-                  - ""
-                  - - Ref: ProjectName
-                    - "-frontend-builder"
+                ProjectName:
+                  Ref: FrontendBuilder
                 PrimarySource: SourceArtifact
 
               # Get the source code artifact
