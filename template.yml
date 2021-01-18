@@ -255,6 +255,25 @@ Resources:
               # Action name
               Name: Deploy_backend_build
 
+        - Name: Approval
+          Actions:
+            # Manual approval action
+            - ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Provider: Manual
+                Version: 1
+              Configuration:
+                NotificationArn:
+                  Ref: ApprovalSNSTopicARN
+                CustomData: !Join
+                  - ""
+                  - - "The pipeline for "
+                    - Ref: ProjectName
+                    - " has new changes awaiting manual approval"
+              InputArtifacts: []
+              Name: BackendApproval
+
       # Pipeline name
       Name: !Join
         - ""
@@ -477,9 +496,19 @@ Resources:
                 Resource:
                   - !GetAtt [BackendBuilder, Arn]
                   - !GetAtt [FrontendBuilder, Arn]
+              # SNS permissions
+              - Effect: "Allow"
+                Action: "sns:Publish"
+                Resource:
+                  Ref: ApprovalSNSTopicARN
 
 # Template parameters
 Parameters:
+  # ARN of the SNS topic used to notify about awaiting manual approvals
+  ApprovalSNSTopicARN:
+    Type: String
+    Description: Enter the ARN of the SNS topic you want to use to send notifications about awaiting manual approvals
+
   # How many days artifacts are stored
   ArtifactLifetimeInDays:
     Type: Number
@@ -553,6 +582,7 @@ Metadata:
       - Parameters:
           - ProjectName
           - ArtifactLifetimeInDays
+          - ApprovalSNSTopicARN
       - Label:
           default: "Git configuration"
         Parameters:
