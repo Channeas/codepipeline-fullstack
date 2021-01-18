@@ -162,7 +162,7 @@ Resources:
               Name: Get_source
 
         # Stage for building the code loaded from Github
-        - Name: Build
+        - Name: Build-and-zip
           Actions:
             # Action that builds the frontend
             - ActionTypeId:
@@ -213,7 +213,7 @@ Resources:
               Name: Build_backend
 
         # Stage for deploying the build
-        - Name: Deploy
+        - Name: Deploy-to-S3
           Actions:
             # Action that deploys the frontend
             - ActionTypeId:
@@ -255,7 +255,7 @@ Resources:
               # Action name
               Name: Deploy_backend_build
 
-        - Name: Approval
+        - Name: Approve-backend-changes
           Actions:
             # Manual approval action
             - ActionTypeId:
