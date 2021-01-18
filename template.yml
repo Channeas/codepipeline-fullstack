@@ -188,6 +188,30 @@ Resources:
               # Action name
               Name: Build_frontend
 
+              # Action that builds the backend
+            - ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+
+              # Connect the build project
+              Configuration:
+                ProjectName:
+                  Ref: BackendBuilder
+                PrimarySource: SourceArtifact
+
+              # Get the source code artifact
+              InputArtifacts:
+                - Name: SourceArtifact
+
+              # Output the build files
+              OutputArtifacts:
+                - Name: BackendBuild
+
+              # Action name
+              Name: Build_backend
+
         # Stage for deploying the build
         - Name: Deploy
           Actions:
