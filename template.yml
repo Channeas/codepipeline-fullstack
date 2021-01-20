@@ -258,11 +258,14 @@ Resources:
         # Stage that creates a CloudFormation changeset for the backend
         - Name: Create-backend-changeset
           Actions:
+            # Action that creates a CloudFormation changeset for the backend
             - ActionTypeId:
                 Category: Deploy
                 Owner: AWS
                 Provider: CloudFormation
                 Version: 1
+
+              # Configuration for how the changeset is created
               Configuration:
                 ActionMode: CHANGE_SET_REPLACE
                 Capabilities: CAPABILITY_IAM
@@ -275,8 +278,11 @@ Resources:
                 RoleArn: !GetAtt [ChangeSetRole, Arn]
                 StackName:
                   Ref: BackendStack
+
+                # Mention where the template is located
                 TemplatePath: SourceArtifact::backend/template.yml
-                #TemplateConfiguration: SourceArtifact::backend/stack-config.json
+
+              # Get the source
               InputArtifacts:
                 - Name: SourceArtifact
               Name: CreateBackendChangeset
@@ -368,7 +374,8 @@ Resources:
         # Environment variable used for clearing the bucket before deployment
         EnvironmentVariables:
           - Name: OUTPUT_BUCKET
-            Value: !Ref FrontendBucket
+            Value:
+              Ref: FrontendBucket
             Type: PLAINTEXT
 
       # Name of the CodeBuild project
@@ -480,12 +487,10 @@ Resources:
                     - /*
               # Permissions for clearing the output bucket
               - Effect: "Allow"
-                Action:
-                  - "s3:ListBucket"
+                Action: "s3:ListBucket"
                 Resource: !GetAtt [FrontendBucket, Arn]
               - Effect: "Allow"
-                Action:
-                  - "s3:DeleteObject"
+                Action: "s3:DeleteObject"
                 Resource: !Join
                   - ""
                   - - !GetAtt [FrontendBucket, Arn]
@@ -510,13 +515,12 @@ Resources:
             Statement:
               # Codestar permissions
               - Effect: "Allow"
-                Action:
-                  - "codestar-connections:UseConnection"
-                Resource: !Ref CodeStarConnection
+                Action: "codestar-connections:UseConnection"
+                Resource:
+                  Ref: CodeStarConnection
               # Bucket permissions
               - Effect: "Allow"
-                Action:
-                  - "s3:*"
+                Action: "s3:*"
                 Resource:
                   - !Join
                     - ""
@@ -601,6 +605,21 @@ Parameters:
     Type: String
     Description: Enter the branch name that you want to be used for the build
 
+  # ARN of the SSL certificate to be used by the CloudFront Distribution
+  CloudFrontCertificateARN:
+    Type: String
+    Description: Enter the ARN of the Amazon Certificate Manager certificate to be used by the CloudFront Distribution
+
+  # CloudFront distribution price class
+  CloudFrontPriceClass:
+    Type: String
+    Default: PriceClass_100
+    AllowedValues:
+      - PriceClass_100
+      - PriceClass_200
+      - PriceClass_All
+    Description: Enter the allowed price class for the CloudFront Distribution
+
   # CodeStar Connection
   CodeStarConnection:
     Type: String
@@ -628,36 +647,21 @@ Parameters:
     Type: String
     Description: Enter the link to your initial backend CloudFormation template. Should have the parameter "BackendS3Bucket", but could be empty otherwise (see https://github.com/stelligent/empty-stack/blob/master/empty-stack.yml)
 
-  # ARN of the SSL certificate to be used by the CloudFront Distribution
-  CloudFrontCertificateARN:
-    Type: String
-    Description: Enter the ARN of the Amazon Certificate Manager certificate to be used by the CloudFront Distribution
-
-  # CloudFront distribution price class
-  CloudFrontPriceClass:
-    Type: String
-    Default: PriceClass_100
-    AllowedValues:
-      - PriceClass_100
-      - PriceClass_200
-      - PriceClass_All
-    Description: Enter the allowed price class for the CloudFront Distribution
-
   # Then name of the project
   ProjectName:
     Type: String
     Description: Enter what you want to call this project. Must be lowercase. Used for naming/tagging resources
     AllowedPattern: "[a-z0-9_-]+"
 
-  # Github username
-  RepositoryOwner:
-    Type: String
-    Description: Enter the git provider username of the repository owner
-
   # Github repository name
   RepositoryName:
     Type: String
     Description: Enter the name of the repository you want to build
+
+    # Github username
+  RepositoryOwner:
+    Type: String
+    Description: Enter the git provider username of the repository owner
 
 # Template metadata
 Metadata:
