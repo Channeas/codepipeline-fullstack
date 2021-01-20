@@ -9,7 +9,3 @@ Resources:
   NullResource:
     Type: "Custom::NullResource"
     Condition: HasNot
-
-Parameters:
-  BackendS3Bucket:
-    Type: String

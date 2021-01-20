@@ -255,8 +255,34 @@ Resources:
               # Action name
               Name: Deploy_backend_build
 
+        # Stage that creates a CloudFormation changeset for the backend
+        - Name: Create-backend-changeset
+          Actions:
+            - ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                Capabilities: CAPABILITY_IAM
+                ChangeSetName: BackendChanges
+                ParameterOverrides: !Join
+                  - ""
+                  - - '{"BackendS3Bucket":"'
+                    - Ref: BackendBucket
+                    - '"}'
+                RoleArn: !GetAtt [ChangeSetRole, Arn]
+                StackName:
+                  Ref: BackendStack
+                TemplatePath: SourceArtifact::backend/template.yml
+                #TemplateConfiguration: SourceArtifact::backend/stack-config.json
+              InputArtifacts:
+                - Name: SourceArtifact
+              Name: CreateBackendChangeset
+
         # Stage for verifying backend updates
-        - Name: Approve-backend-changes
+        - Name: Approve-backend-changeset
           Actions:
             # Manual approval action
             - ActionTypeId:
@@ -380,9 +406,6 @@ Resources:
     Properties:
       TemplateURL:
         Ref: InitialBackendTemplateURL
-      Parameters:
-        BackendS3Bucket:
-          Ref: BackendBucket
       Tags:
         - Key: Project
           Value:
@@ -522,6 +545,41 @@ Resources:
                 Action: "sns:Publish"
                 Resource:
                   Ref: ApprovalSNSTopicARN
+              - Effect: "Allow"
+                Action:
+                  - "cloudformation:CreateChangeSet"
+                  - "cloudformation:DeleteChangeSet"
+                  - "cloudformation:DescribeChangeSet"
+                  - "cloudformation:DescribeStacks"
+                Resource:
+                  Ref: BackendStack
+              # Allow this role to pass on permissions to the changeset creator
+              - Effect: "Allow"
+                Action: "iam:PassRole"
+                Resource: !GetAtt [ChangeSetRole, Arn]
+
+  # IAM role used by the pipeline action creating the changeset
+  ChangeSetRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ["sts:AssumeRole"]
+            Effect: Allow
+            Principal:
+              Service: [cloudformation.amazonaws.com]
+
+      # Action permissions
+      Policies:
+        - PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # CloudFormation permissions
+              - Effect: "Allow"
+                Action: "cloudformation:CreateChangeSet"
+                Resource:
+                  Ref: BackendStack
 
 # Template parameters
 Parameters:
