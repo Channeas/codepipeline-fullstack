@@ -255,6 +255,7 @@ Resources:
               # Action name
               Name: Deploy_backend_build
 
+        # Stage for verifying backend updates
         - Name: Approve-backend-changes
           Actions:
             # Manual approval action
@@ -366,6 +367,26 @@ Resources:
 
       # Building timeout
       TimeoutInMinutes: 5
+
+  # ░█████╗░██╗░░░░░░█████╗░██╗░░░██╗██████╗░███████╗░█████╗░██████╗░███╗░░░███╗░█████╗░████████╗██╗░█████╗░███╗░░██╗
+  # ██╔══██╗██║░░░░░██╔══██╗██║░░░██║██╔══██╗██╔════╝██╔══██╗██╔══██╗████╗░████║██╔══██╗╚══██╔══╝██║██╔══██╗████╗░██║
+  # ██║░░╚═╝██║░░░░░██║░░██║██║░░░██║██║░░██║█████╗░░██║░░██║██████╔╝██╔████╔██║███████║░░░██║░░░██║██║░░██║██╔██╗██║
+  # ██║░░██╗██║░░░░░██║░░██║██║░░░██║██║░░██║██╔══╝░░██║░░██║██╔══██╗██║╚██╔╝██║██╔══██║░░░██║░░░██║██║░░██║██║╚████║
+  # ╚█████╔╝███████╗╚█████╔╝╚██████╔╝██████╔╝██║░░░░░╚█████╔╝██║░░██║██║░╚═╝░██║██║░░██║░░░██║░░░██║╚█████╔╝██║░╚███║
+  # ░╚════╝░╚══════╝░╚════╝░░╚═════╝░╚═════╝░╚═╝░░░░░░╚════╝░╚═╝░░╚═╝╚═╝░░░░░╚═╝╚═╝░░╚═╝░░░╚═╝░░░╚═╝░╚════╝░╚═╝░░╚══╝
+  # CloudFormation stack where backend resources will be placed
+  BackendStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        Ref: InitialBackendTemplateURL
+      Parameters:
+        BackendS3Bucket:
+          Ref: BackendBucket
+      Tags:
+        - Key: Project
+          Value:
+            Ref: ProjectName
 
   # ██╗░█████╗░███╗░░░███╗
   # ██║██╔══██╗████╗░████║
@@ -544,6 +565,11 @@ Parameters:
     Default: index.html
     Description: Enter the name (or path) of your index file
 
+  # S3 link to where the initial backend CloudFormation template is stored
+  InitialBackendTemplateURL:
+    Type: String
+    Description: Enter the link to your initial backend CloudFormation template. Should have the parameter "BackendS3Bucket", but could be empty otherwise (see https://github.com/stelligent/empty-stack/blob/master/empty-stack.yml)
+
   # ARN of the SSL certificate to be used by the CloudFront Distribution
   CloudFrontCertificateARN:
     Type: String
@@ -583,6 +609,7 @@ Metadata:
           - ProjectName
           - ArtifactLifetimeInDays
           - ApprovalSNSTopicARN
+          - InitialBackendTemplateURL
       - Label:
           default: "Git configuration"
         Parameters:
