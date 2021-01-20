@@ -1,0 +1,15 @@
+# Empty CloudFormation stack, originally from https://github.com/stelligent/empty-stack
+AWSTemplateFormatVersion: "2010-09-09"
+
+Conditions:
+  HasNot:
+    Fn::Equals: ["a", "b"]
+
+Resources:
+  NullResource:
+    Type: "Custom::NullResource"
+    Condition: HasNot
+
+Parameters:
+  BackendS3Bucket:
+    Type: String
