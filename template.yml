@@ -208,6 +208,7 @@ Resources:
               # Output the build files
               OutputArtifacts:
                 - Name: BackendBuild
+                - Name: BuildData
 
               # Action name
               Name: Build_backend
@@ -270,11 +271,11 @@ Resources:
                 ActionMode: CHANGE_SET_REPLACE
                 Capabilities: CAPABILITY_IAM
                 ChangeSetName: BackendChanges
-                ParameterOverrides: !Join
-                  - ""
-                  - - '{"BackendS3Bucket":"'
-                    - Ref: BackendBucket
-                    - '"}'
+                ParameterOverrides: !Sub |
+                  {
+                    "BackendS3Bucket": "${BackendBucket}",
+                    "BuildId": { "Fn::GetParam" : ["BuildData", "buildData.json", "BuildId"] }
+                  }
                 RoleArn: !GetAtt [ChangeSetRole, Arn]
                 StackName:
                   Ref: BackendStack
@@ -286,6 +287,7 @@ Resources:
               # Get the source
               InputArtifacts:
                 - Name: SourceArtifact
+                - Name: BuildData
               Name: CreateBackendChangeset
 
         # Stage for verifying backend updates
