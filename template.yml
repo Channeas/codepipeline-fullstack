@@ -279,8 +279,9 @@ Resources:
                 StackName:
                   Ref: BackendStack
 
-                # Mention where the template is located
+                # Mention where the template and template config is located
                 TemplatePath: SourceArtifact::backend/template.yml
+                TemplateConfiguration: SourceArtifact::backend/stack-config.json
 
               # Get the source
               InputArtifacts:
@@ -306,6 +307,27 @@ Resources:
                     - " has new changes awaiting manual approval"
               InputArtifacts: []
               Name: BackendApproval
+
+        # Stage that executes the backend changeset (if approved)
+        - Name: Execute-backend-changeset
+          Actions:
+            # Action that executes the backend changeset
+            - ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+
+              # Configuration for how the changeset is executed
+              Configuration:
+                ActionMode: CHANGE_SET_EXECUTE
+                Capabilities: CAPABILITY_IAM
+                ChangeSetName: BackendChanges
+                RoleArn: !GetAtt [ChangeSetRole, Arn]
+                StackName:
+                  Ref: BackendStack
+              InputArtifacts: []
+              Name: ExecuteBackendChangeset
 
       # Pipeline name
       Name: !Join
@@ -555,6 +577,7 @@ Resources:
                   - "cloudformation:DeleteChangeSet"
                   - "cloudformation:DescribeChangeSet"
                   - "cloudformation:DescribeStacks"
+                  - "cloudformation:ExecuteChangeSet"
                 Resource:
                   Ref: BackendStack
               # Allow this role to pass on permissions to the changeset creator
@@ -579,11 +602,31 @@ Resources:
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
-              # CloudFormation permissions
-              - Effect: "Allow"
-                Action: "cloudformation:CreateChangeSet"
-                Resource:
-                  Ref: BackendStack
+              # Permissions used when creating resources. Change these as needed, right now they are set up for serverless apps
+              - Effect: Allow
+                Action:
+                  - "apigateway:*"
+                  - "iam:AttachRolePolicy"
+                  - "iam:CreateRole"
+                  - "iam:DeleteRole"
+                  - "iam:DeleteRolePolicy"
+                  - "iam:DetachRolePolicy"
+                  - "iam:GetRole"
+                  - "iam:getRolePolicy"
+                  - "iam:PassRole"
+                  - "iam:PutRolePolicy"
+                  - "iam:TagRole"
+                  - "lambda:*"
+                  - "dynamodb:*"
+                Resource: "*"
+              # Access to retrieve items from the backend bucket
+              - Effect: Allow
+                Action:
+                  - "s3:GetObject"
+                Resource: !Join
+                  - ""
+                  - - !GetAtt [BackendBucket, Arn]
+                    - /*
 
 # Template parameters
 Parameters:
