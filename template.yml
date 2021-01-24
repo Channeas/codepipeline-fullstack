@@ -690,7 +690,7 @@ Parameters:
   # S3 link to where the initial backend CloudFormation template is stored
   InitialBackendTemplateURL:
     Type: String
-    Description: Enter the link to your initial backend CloudFormation template. Should have the parameter "BackendS3Bucket", but could be empty otherwise (see https://github.com/stelligent/empty-stack/blob/master/empty-stack.yml)
+    Description: Enter the link to your initial backend CloudFormation template. Can be empty (see https://github.com/stelligent/empty-stack/blob/master/empty-stack.yml)
 
   # Then name of the project
   ProjectName:
