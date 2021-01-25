@@ -32,7 +32,20 @@ The template also creates 3 [IAM roles](https://docs.aws.amazon.com/IAM/latest/U
 
 ## Pipeline architecture
 
+The pipeline consists of 6 stages, shown in the diagram below:
+
 ![Diagram of how the pipeline is structured](architecture.png)
+
+The stages do the following:
+
+1. **Source** - retrieves the source code using the CodeStar connection specified as the _CodeStarConnection_ parameter
+2. **Build-and-zip** - uses 2 CodeBuild builders to build the frontend and zip backend files
+3. **Deploy-to-S3** - deploys the files from the builders to S3. The frontend goes to a bucket used by the CloudFront distribution, while the backend goes to another bucket for temporary storage
+4. **Create-backend-changeset** - creates a CloudFormation changeset identifying what has changed since the backend template was last deployed
+5. **Approve-backend-changeset** - manual approval action of the backend changes, with a notification sent to the SNS topic specified as the _ApprovalSNSTopicARN_ parameter
+6. **Execute-backend-changeset** - assuming the backend changes were approved, this stage builds the new backend resources and modifies existing ones
+
+It is worth noting that unlike Lambda functions specified in a regular CloudFormation template, the ones specified in the backend template will automatically update each time the pipeline runs. This is achieved by storing the backend builds in new folders, leading to updated S3 keys for the Lambdas
 
 ## Template parameters
 
