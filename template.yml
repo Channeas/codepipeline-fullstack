@@ -144,7 +144,7 @@ Resources:
               # Connect the pipeline to the git provider. The CodeStar connection could, as of right now, be either Github or Bitbucket. See documentation for latest info: https://docs.aws.amazon.com/codepipeline/latest/userguide/action-reference-CodestarConnectionSource.html
               Configuration:
                 ConnectionArn:
-                  Ref: CodeStarConnection
+                  Ref: CodeStarConnectionARN
                 FullRepositoryId: !Join
                   - ""
                   - - Ref: RepositoryOwner
@@ -541,7 +541,7 @@ Resources:
               - Effect: "Allow"
                 Action: "codestar-connections:UseConnection"
                 Resource:
-                  Ref: CodeStarConnection
+                  Ref: CodeStarConnectionARN
               # Bucket permissions
               - Effect: "Allow"
                 Action: "s3:*"
@@ -666,7 +666,7 @@ Parameters:
     Description: Enter the allowed price class for the CloudFront Distribution
 
   # CodeStar Connection
-  CodeStarConnection:
+  CodeStarConnectionARN:
     Type: String
     Description: Enter the ARN of the CodeStar connection you want to use
 
@@ -712,15 +712,20 @@ Parameters:
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
-      - Parameters:
+      - Label:
+          default: "General"
+        Parameters:
           - ProjectName
-          - ArtifactLifetimeInDays
+      - Label:
+          default: "Pipeline configuration"
+        Parameters:
           - ApprovalSNSTopicARN
+          - ArtifactLifetimeInDays
           - InitialBackendTemplateURL
       - Label:
           default: "Git configuration"
         Parameters:
-          - CodeStarConnection
+          - CodeStarConnectionARN
           - RepositoryOwner
           - RepositoryName
           - BranchName

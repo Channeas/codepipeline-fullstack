@@ -2,21 +2,38 @@
 
 This is a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template that creates a [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that builds and deploys fullstack applications on AWS. It builds git projects, that are fetched using a [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html). The frontend is deployed on a [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution.
 
-## Resources created
+## Setup
 
-The template creates a total of 8 resources, which are listed below:
+### Prerequisites
 
--   3 [S3](https://aws.amazon.com/s3/) buckets - 1 for storing artifacts used by the CodePipeline pipeline, 1 for storing the frontend after building it, and 1 for storing backend code (for example zipped Lambdas)
+## Template parameters
 
--   2 [CodeBuild](https://aws.amazon.com/codebuild/) builders. One is used to build the frontend, and the other one to build the backend
+The template requires quite a few parameters, all of which are detailed below. Note that ARN stands for [Amazon Resource Name](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 
--   1 [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that retrieves the source code from the git provider, and then builds the frontend and backend
+### General
 
--   1 [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution that serves the frontend, as well as an [Origin Access Identity](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html) used by the distribution to retrieve content
+-   **ProjectName** - What you want to call the project. Must be lowercase, alphanumeric, can contain dashes and underscores. Used for naming/tagging resources
 
--   1 (nested) [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) stack that contains the backend resources speicifed by the backend template
+### Pipeline configuration
 
-The template also creates 3 [IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html) and 1 [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html), which are described under the "Required IAM permissions" header.
+-   **ApprovalSNSTopicARN** - The ARN of the [SNS topic](https://aws.amazon.com/sns/) that will receive notifications about awaiting manual approvals.
+-   **ArtifactLifetimeInDays** - How long pipeline artifacts should be store. Min 1 day, max 180 days
+-   **InitialBackendTemplateURL** - The url of a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template stored in an [S3](https://aws.amazon.com/s3/) bucket. This template will be used for the initial creation of the backend CloudFormation stack. It doesn't matter what this template contains, as it will be overwritten when the pipeline runs. Using the [empty stack template](emtpy-stack.yml) in this repository is recommended
+
+### Git configuration
+
+-   **CodeStarConnectionARN** - The ARN of the [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html) to the git provider where your git repository is hosted
+-   **RepositoryOwner** - The username of the user owning your git repository. Note that this is the username used for the git provider. In my case, it would be my GitHub username, Channeas
+-   **RepositoryName** - The name of your git repository
+-   **BranchName** - The name of the branch that you want to build
+
+### Hosting configuration
+
+-   **DomainName** - The domain name to be used by the [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution
+-   **CloudFrontCertificateARN** - The ARN of the [ACM](https://aws.amazon.com/certificate-manager/) SSL certificate to be used by the [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution. Must be for the domain name entered above
+-   **CloudFrontPriceClass** - The [price class](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PriceClass.html) for the [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution. This determines in which data centers your frontend will be stored. Allowed values are "PriceClass_100", "PriceClass_200" and "PriceClass_All"
+-   **IndexDocumentName** - The name of your index document, for example index.html
+-   **ErrorDocumentName** - The name of your error document, for example error.html
 
 ## Pipeline architecture
 
@@ -34,6 +51,22 @@ The stages do the following:
 6. **Execute-backend-changeset** - assuming the backend changes were approved, this stage builds the new backend resources and modifies existing ones
 
 It is worth noting that unlike [Lambda](https://docs.aws.amazon.com/lambda/index.html) functions specified in a regular [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template, the ones specified in the backend template will automatically update each time the pipeline runs. This is achieved by storing the backend builds in new folders, leading to updated [S3](https://aws.amazon.com/s3/) keys for the [Lambdas](https://docs.aws.amazon.com/lambda/index.html)
+
+## Resources created
+
+The template creates a total of 8 resources, which are listed below:
+
+-   3 [S3](https://aws.amazon.com/s3/) buckets - 1 for storing artifacts used by the CodePipeline pipeline, 1 for storing the frontend after building it, and 1 for storing backend code (for example zipped Lambdas)
+
+-   2 [CodeBuild](https://aws.amazon.com/codebuild/) builders. One is used to build the frontend, and the other one to build the backend
+
+-   1 [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that retrieves the source code from the git provider, and then builds the frontend and backend
+
+-   1 [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution that serves the frontend, as well as an [Origin Access Identity](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html) used by the distribution to retrieve content
+
+-   1 (nested) [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) stack that contains the backend resources speicifed by the backend template
+
+The template also creates 3 [IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html) and 1 [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html), which are described under the "Required IAM permissions" header.
 
 ## Required IAM permissions
 
@@ -63,8 +96,11 @@ To create the template, an IAM user requires the following permissions:
             "Action": [
                 "codebuild:*",
                 "codepipeline:*",
+                "codestar-connections:UseConnection",
                 "cloudfront:*",
+                "cloudwatch:*",
                 "s3:*",
+                "sns:Publish",
                 "iam:*"
             ],
             "Resource": "*",
@@ -249,7 +285,3 @@ The first two statements below are required. The third one, however, is what dec
     ]
 }
 ```
-
-## Template parameters
-
-## Setup
