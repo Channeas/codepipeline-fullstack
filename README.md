@@ -16,19 +16,7 @@ The template creates a total of 8 resources, which are listed below:
 
 -   1 (nested) [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) stack that contains the backend resources speicifed by the backend template
 
-The template also creates 3 [IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html) and 1 [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html):
-
--   1 role for the [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that allows access to the specified [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html), the 3 [S3](https://aws.amazon.com/s3/) buckets, and the [CodeBuild](https://aws.amazon.com/codebuild/) builder
-
--   1 role for the [CodeBuild](https://aws.amazon.com/codebuild/) builders that allows
-
-    -   Access to [CloudWatch](https://aws.amazon.com/cloudwatch/) and [CloudWatch Logs](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html) for storing build logs
-    -   [Read](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html) and [write](https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html) access to the artifact [S3](https://aws.amazon.com/s3/) bucket
-    -   [ListBucket](https://docs.aws.amazon.com/AmazonS3/latest/dev/walkthrough1.html#walkthrough-group-policy:~:text=List%20root%2Dlevel%20items%2C%20folders%2C%20and%20objects,have%20permission%20for%20the%20s3%3AListBucket%20action) and [DeleteObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObject.html) access to the frontend and backend [S3](https://aws.amazon.com/s3/) buckets for clearing legacy files
-
--   1 role that determines what resources the backend can contain (called "ChangeSetRole")
-
--   1 bucket policy granting the [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution [read](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html) access to the frontend bucket
+The template also creates 3 [IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html) and 1 [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html), which are described under the "Required IAM permissions" header.
 
 ## Pipeline architecture
 
@@ -48,6 +36,219 @@ The stages do the following:
 It is worth noting that unlike [Lambda](https://docs.aws.amazon.com/lambda/index.html) functions specified in a regular [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template, the ones specified in the backend template will automatically update each time the pipeline runs. This is achieved by storing the backend builds in new folders, leading to updated [S3](https://aws.amazon.com/s3/) keys for the [Lambdas](https://docs.aws.amazon.com/lambda/index.html)
 
 ## Required IAM permissions
+
+To create the template, an IAM user requires the following permissions:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "cloudformation:CreateStack",
+                "cloudformation:CreateChangeSet",
+                "cloudformation:DeleteChangeSet",
+                "cloudformation:DescribeChangeSet",
+                "cloudformation:DescribeStacks",
+                "cloudformation:DescribeStackEvents",
+                "cloudformation:DescribeStackResources",
+                "cloudformation:ExecuteChangeSet"
+                "cloudformation:GetTemplate",
+                "cloudformation:ValidateTemplate",
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "codebuild:*",
+                "codepipeline:*",
+                "cloudfront:*",
+                "s3:*",
+                "iam:*"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": ["apigateway:*", "lambda:*", "dynamodb:*"],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+```
+
+Please note that the last statement is only required if you plan to run the [example repository](https://github.com/Channeas/cicd-fullstack-test), and could be omitted otherwise.
+
+The template creates 1 [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html) 3 [IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html). Therefore, the permissions below are also required for the IAM user using this template:
+
+### Bucket policy
+
+The following [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html) is attatched to the frontend [S3](https://aws.amazon.com/s3/) bucket created by the template, granting [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) read access:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Id": "[ProjectName]-frontend_policy",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity [FrontendOriginAccessIdentity]"
+            },
+            "Action": "s3:GetObject",
+            "Resource": "[FrontendBucket]/*"
+        }
+    ]
+}
+```
+
+### Pipeline role
+
+The following IAM role is used by the pipeline. It allows:
+
+-   Permission to use the specified [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html)
+-   Full access to the 3 [S3](https://aws.amazon.com/s3/) buckets created by the template
+-   Permission to start and access builds for the 2 [CodeBuild](https://aws.amazon.com/codebuild/) builders
+-   Permission to publish to the specified [SNS topic](https://aws.amazon.com/sns/)
+-   Access to the backend [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) stack created by the template, and permission to work with changesets for that stack
+-   Permission to pass this role on to the role creating the backend [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) changesets
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "codestar-connections:UseConnection",
+            "Resource": "[CodeStarConnection]",
+            "Effect": "Allow"
+        },
+        {
+            "Action": "s3:*",
+            "Resource": [
+                "[ArtifactBucket]/*",
+                "[BackendBucket]/*",
+                "[FrontendBucket]/*"
+            ],
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "codebuild:StartBuild",
+                "codebuild:StartBuildBatch",
+                "codebuild:BatchGetBuilds",
+                "codebuild:BatchGetBuildBatches"
+            ],
+            "Resource": ["[BackendBuilder]", "[FrontendBuilder]"],
+            "Effect": "Allow"
+        },
+        {
+            "Action": "sns:Publish",
+            "Resource": "[ApprovalSNSTopicARN]",
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "cloudformation:CreateChangeSet",
+                "cloudformation:DeleteChangeSet",
+                "cloudformation:DescribeChangeSet",
+                "cloudformation:DescribeStacks",
+                "cloudformation:ExecuteChangeSet"
+            ],
+            "Resource": "[BackendStack]",
+            "Effect": "Allow"
+        },
+        {
+            "Action": "iam:PassRole",
+            "Resource": "[ChangeSetRole]",
+            "Effect": "Allow"
+        }
+    ]
+}
+```
+
+### Build role
+
+The following role is used by the 2 [CodeBuild](https://aws.amazon.com/codebuild/). It allows:
+
+-   Access to [CloudWatch](https://aws.amazon.com/cloudwatch/) and [CloudWatch Logs](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html) for storing build logs
+-   [Read](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html) and [write](https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html) access to the artifact [S3](https://aws.amazon.com/s3/) bucket
+-   List and object deletion access to the frontend [S3](https://aws.amazon.com/s3/) bucket (for clearing legacy build files)
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "cloudwatch:*",
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": ["s3:PutObject", "s3:GetObject", "s3:GetObjectVersion"],
+            "Resource": "[ArtifactBucket]/*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": "s3:ListBucket",
+            "Resource": "[FrontendBucket]",
+            "Effect": "Allow"
+        },
+        {
+            "Action": "s3:DeleteObject",
+            "Resource": "[FrontendBucket]/*",
+            "Effect": "Allow"
+        }
+    ]
+}
+```
+
+### Backend role
+
+The last role created by the template is used to create the changeset that describes changes to the backend [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) stack.
+
+The first two statements below are required. The third one, however, is what decides what controls the permissions of the backend. The permissions below are just an example of the permissions that could be used for a serverless app, but they should be changed to fit your backend. This change should ideally be done directly in the template to avoid issues with future template updates, but could be done using the [IAM](https://aws.amazon.com/iam/) console.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "iam:AttachRolePolicy",
+                "iam:CreateRole",
+                "iam:DeleteRole",
+                "iam:DeleteRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:GetRole",
+                "iam:getRolePolicy",
+                "iam:PassRole",
+                "iam:PutRolePolicy",
+                "iam:TagRole"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": ["s3:GetObject"],
+            "Resource": "[BackendBucket]/*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": ["apigateway:*", "lambda:*", "dynamodb:*"],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+```
 
 ## Template parameters
 
