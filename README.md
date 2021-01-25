@@ -38,14 +38,16 @@ The pipeline consists of 6 stages, shown in the diagram below:
 
 The stages do the following:
 
-1. **Source** - retrieves the source code using the CodeStar connection specified as the _CodeStarConnection_ parameter
-2. **Build-and-zip** - uses 2 CodeBuild builders to build the frontend and zip backend files
-3. **Deploy-to-S3** - deploys the files from the builders to S3. The frontend goes to a bucket used by the CloudFront distribution, while the backend goes to another bucket for temporary storage
-4. **Create-backend-changeset** - creates a CloudFormation changeset identifying what has changed since the backend template was last deployed
-5. **Approve-backend-changeset** - manual approval action of the backend changes, with a notification sent to the SNS topic specified as the _ApprovalSNSTopicARN_ parameter
+1. **Source** - retrieves the source code using the [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html) specified as the _CodeStarConnection_ parameter
+2. **Build-and-zip** - uses 2 [CodeBuild](https://aws.amazon.com/codebuild/) builders to build the frontend and zip backend files
+3. **Deploy-to-S3** - deploys the files from the builders to [S3](https://aws.amazon.com/s3/). The frontend goes to a bucket used by the [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution, while the backend goes to another bucket for temporary storage
+4. **Create-backend-changeset** - creates a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) changeset identifying what has changed since the backend template was last deployed
+5. **Approve-backend-changeset** - [manual approval action](https://docs.aws.amazon.com/codepipeline/latest/userguide/approvals.html) of the backend changes, with a notification sent to the SNS topic specified as the _ApprovalSNSTopicARN_ parameter
 6. **Execute-backend-changeset** - assuming the backend changes were approved, this stage builds the new backend resources and modifies existing ones
 
-It is worth noting that unlike Lambda functions specified in a regular CloudFormation template, the ones specified in the backend template will automatically update each time the pipeline runs. This is achieved by storing the backend builds in new folders, leading to updated S3 keys for the Lambdas
+It is worth noting that unlike [Lambda](https://docs.aws.amazon.com/lambda/index.html) functions specified in a regular [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template, the ones specified in the backend template will automatically update each time the pipeline runs. This is achieved by storing the backend builds in new folders, leading to updated [S3](https://aws.amazon.com/s3/) keys for the [Lambdas](https://docs.aws.amazon.com/lambda/index.html)
+
+## Required IAM permissions
 
 ## Template parameters
 
