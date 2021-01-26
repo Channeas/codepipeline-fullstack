@@ -2,13 +2,19 @@
 
 This is a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template that creates a [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that builds and deploys fullstack applications on AWS. It builds git projects, that are fetched using a [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html). The frontend is deployed on a [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution.
 
-## Setup
+## Prerequisites
 
-### Prerequisites
+To run this template you need 3 things:
+
+-   A [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html) to the git provider where your project is hosted
+-   A domain for serving the frontend, as well as an [ACM](https://aws.amazon.com/certificate-manager/) SSL certificate for that domain
+-   A CloudFormation template hosted on [S3](https://aws.amazon.com/s3/) that will be used for building the initial backend. The [empty stack template](empty-stack.yml) in this repository is recommended
+
+## Setup
 
 ## Template parameters
 
-The template requires quite a few parameters, all of which are detailed below. Note that ARN stands for [Amazon Resource Name](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+The template requires quite a few parameters, all of which are detailed below. Note that ARN stands for [Amazon Resource Name](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 
 ### General
 
@@ -18,7 +24,7 @@ The template requires quite a few parameters, all of which are detailed below. N
 
 -   **ApprovalSNSTopicARN** - The ARN of the [SNS topic](https://aws.amazon.com/sns/) that will receive notifications about awaiting manual approvals.
 -   **ArtifactLifetimeInDays** - How long pipeline artifacts should be store. Min 1 day, max 180 days
--   **InitialBackendTemplateURL** - The url of a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template stored in an [S3](https://aws.amazon.com/s3/) bucket. This template will be used for the initial creation of the backend CloudFormation stack. It doesn't matter what this template contains, as it will be overwritten when the pipeline runs. Using the [empty stack template](emtpy-stack.yml) in this repository is recommended
+-   **InitialBackendTemplateURL** - The url of a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template stored in an [S3](https://aws.amazon.com/s3/) bucket. This template will be used for the initial creation of the backend CloudFormation stack. It doesn't matter what this template contains, as it will be overwritten when the pipeline runs. Using the [empty stack template](empty-stack.yml) in this repository is recommended
 
 ### Git configuration
 
@@ -118,7 +124,7 @@ To create the template, an IAM user requires the following permissions:
 
 Please note that the last statement is only required if you plan to run the [example repository](https://github.com/Channeas/cicd-fullstack-test), and could be omitted otherwise.
 
-The template creates 1 [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html) 3 [IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html). Therefore, the permissions below are also required for the IAM user using this template:
+The template creates 1 [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html) and 3 [IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html). Therefore, the permissions below are also required for the IAM user using this template:
 
 ### Bucket policy
 
