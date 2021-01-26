@@ -1,16 +1,18 @@
 # CodePipeline fullstack CICD pipeline
 
-This is a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template that creates a [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that builds and deploys fullstack applications on AWS. It builds git projects, that are fetched using a [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html). The frontend is deployed on a [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution.
+This is a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template that creates a [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that builds and deploys [fullstack applications](https://github.com/Channeas/cicd-fullstack-test) on AWS. It builds git projects, that are fetched using a [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html). The frontend is deployed on a [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution.
 
-## Prerequisites
+## Setup
 
-To run this template you need 3 things:
+To run this template, your project should be organized like the [example repository](https://github.com/Channeas/cicd-fullstack-test). This means that there needs to be 2 root folders, named frontend and backend. Both those folders should contain their own [CodeBuild builspec](https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html). Please see the [example repository](https://github.com/Channeas/cicd-fullstack-test) to see how these should be structured. The backend folder should also contain a [CloudFormation template](https://aws.amazon.com/cloudformation/resources/templates/) named template.yml that describes your backend.
+
+Besides the above project structure, there are 3 prerequisites you need before running this template:
 
 -   A [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html) to the git provider where your project is hosted
 -   A domain for serving the frontend, as well as an [ACM](https://aws.amazon.com/certificate-manager/) SSL certificate for that domain
 -   A CloudFormation template hosted on [S3](https://aws.amazon.com/s3/) that will be used for building the initial backend. The [empty stack template](empty-stack.yml) in this repository is recommended
 
-## Setup
+Once these 3 things are dealt with, run the template either in the [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) console, or using the [AWS CLI](https://aws.amazon.com/cli/). The parameters required by the template are explained below.
 
 ## Template parameters
 
@@ -18,7 +20,7 @@ The template requires quite a few parameters, all of which are detailed below. N
 
 ### General
 
--   **ProjectName** - What you want to call the project. Must be lowercase, alphanumeric, can contain dashes and underscores. Used for naming/tagging resources
+-   **ProjectName** - What you want to call the project. Must be lowercase and alphanumeric, but can contain dashes and underscores. Used for naming/tagging resources
 
 ### Pipeline configuration
 
