@@ -1,6 +1,6 @@
 # CodePipeline fullstack CICD pipeline
 
-This is a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template that creates a [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that builds and deploys [fullstack applications](https://github.com/Channeas/cicd-fullstack-test) on AWS. It builds git projects, that are fetched using a [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html). The frontend is deployed on a [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution.
+This is a [CloudFormation](https://aws.amazon.com/cloudformation/) template that creates a [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that builds and deploys [fullstack applications](https://github.com/Channeas/cicd-fullstack-test) on AWS. It builds git projects, that are fetched using a [CodeStar Connection](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections.html). The frontend is deployed on a [CloudFront](https://aws.amazon.com/cloudfront/) distribution.
 
 ## Setup
 
@@ -8,11 +8,11 @@ To run this template, your project should be organized like the [example reposit
 
 Besides the above project structure, there are 3 prerequisites you need before running this template:
 
--   A [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html) to the git provider where your project is hosted
+-   A [CodeStar Connection](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections.html) to the git provider where your project is hosted
 -   A domain for serving the frontend, as well as an [ACM](https://aws.amazon.com/certificate-manager/) SSL certificate for that domain
 -   A CloudFormation template hosted on [S3](https://aws.amazon.com/s3/) that will be used for building the initial backend. The [empty stack template](empty-stack.yml) in this repository is recommended
 
-Once these 3 things are dealt with, run the template either in the [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) console, or using the [AWS CLI](https://aws.amazon.com/cli/). The parameters required by the template are explained below.
+Once these 3 things are dealt with, run the template either in the [CloudFormation](https://aws.amazon.com/cloudformation/) console, or using the [AWS CLI](https://aws.amazon.com/cli/). The parameters required by the template are explained below.
 
 ## Template parameters
 
@@ -26,20 +26,20 @@ The template requires quite a few parameters, all of which are detailed below. N
 
 -   **ApprovalSNSTopicARN** - The ARN of the [SNS topic](https://aws.amazon.com/sns/) that will receive notifications about awaiting manual approvals.
 -   **ArtifactLifetimeInDays** - How long pipeline artifacts should be store. Min 1 day, max 180 days
--   **InitialBackendTemplateURL** - The url of a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template stored in an [S3](https://aws.amazon.com/s3/) bucket. This template will be used for the initial creation of the backend CloudFormation stack. It doesn't matter what this template contains, as it will be overwritten when the pipeline runs. Using the [empty stack template](empty-stack.yml) in this repository is recommended
+-   **InitialBackendTemplateURL** - The url of a [CloudFormation](https://aws.amazon.com/cloudformation/) template stored in an [S3](https://aws.amazon.com/s3/) bucket. This template will be used for the initial creation of the backend CloudFormation stack. It doesn't matter what this template contains, as it will be overwritten when the pipeline runs. Using the [empty stack template](empty-stack.yml) in this repository is recommended
 
 ### Git configuration
 
--   **CodeStarConnectionARN** - The ARN of the [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html) to the git provider where your git repository is hosted
+-   **CodeStarConnectionARN** - The ARN of the [CodeStar Connection](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections.html) to the git provider where your git repository is hosted
 -   **RepositoryOwner** - The username of the user owning your git repository. Note that this is the username used for the git provider. In my case, it would be my GitHub username, Channeas
 -   **RepositoryName** - The name of your git repository
 -   **BranchName** - The name of the branch that you want to build
 
 ### Hosting configuration
 
--   **DomainName** - The domain name to be used by the [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution
--   **CloudFrontCertificateARN** - The ARN of the [ACM](https://aws.amazon.com/certificate-manager/) SSL certificate to be used by the [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution. Must be for the domain name entered above
--   **CloudFrontPriceClass** - The [price class](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PriceClass.html) for the [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution. This determines in which data centers your frontend will be stored. Allowed values are "PriceClass_100", "PriceClass_200" and "PriceClass_All"
+-   **DomainName** - The domain name to be used by the [CloudFront](https://aws.amazon.com/cloudfront/) distribution
+-   **CloudFrontCertificateARN** - The ARN of the [ACM](https://aws.amazon.com/certificate-manager/) SSL certificate to be used by the [CloudFront](https://aws.amazon.com/cloudfront/) distribution. Must be for the domain name entered above
+-   **CloudFrontPriceClass** - The [price class](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PriceClass.html) for the [CloudFront](https://aws.amazon.com/cloudfront/) distribution. This determines in which data centers your frontend will be stored. Allowed values are "PriceClass_100", "PriceClass_200" and "PriceClass_All"
 -   **IndexDocumentName** - The name of your index document, for example index.html
 -   **ErrorDocumentName** - The name of your error document, for example error.html
 
@@ -51,14 +51,14 @@ The pipeline consists of 6 stages, shown in the diagram below:
 
 The stages do the following:
 
-1. **Source** - retrieves the source code using the [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html) specified as the _CodeStarConnection_ parameter
+1. **Source** - retrieves the source code using the [CodeStar Connection](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections.html) specified as the _CodeStarConnection_ parameter
 2. **Build-and-zip** - uses 2 [CodeBuild](https://aws.amazon.com/codebuild/) builders to build the frontend and zip backend files
-3. **Deploy-to-S3** - deploys the files from the builders to [S3](https://aws.amazon.com/s3/). The frontend goes to a bucket used by the [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution, while the backend goes to another bucket for temporary storage
-4. **Create-backend-changeset** - creates a [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) changeset identifying what has changed since the backend template was last deployed
+3. **Deploy-to-S3** - deploys the files from the builders to [S3](https://aws.amazon.com/s3/). The frontend goes to a bucket used by the [CloudFront](https://aws.amazon.com/cloudfront/) distribution, while the backend goes to another bucket for temporary storage
+4. **Create-backend-changeset** - creates a [CloudFormation](https://aws.amazon.com/cloudformation/) changeset identifying what has changed since the backend template was last deployed
 5. **Approve-backend-changeset** - [manual approval action](https://docs.aws.amazon.com/codepipeline/latest/userguide/approvals.html) of the backend changes, with a notification sent to the SNS topic specified as the _ApprovalSNSTopicARN_ parameter
 6. **Execute-backend-changeset** - assuming the backend changes were approved, this stage builds the new backend resources and modifies existing ones
 
-It is worth noting that unlike [Lambda](https://docs.aws.amazon.com/lambda/index.html) functions specified in a regular [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template, the ones specified in the backend template will automatically update each time the pipeline runs. This is achieved by storing the backend builds in new folders, leading to updated [S3](https://aws.amazon.com/s3/) keys for the [Lambdas](https://docs.aws.amazon.com/lambda/index.html)
+It is worth noting that unlike [Lambda](https://aws.amazon.com/lambda/) functions specified in a regular [CloudFormation](https://aws.amazon.com/cloudformation/) template, the ones specified in the backend template will automatically update each time the pipeline runs. This is achieved by storing the backend builds in new folders, leading to updated [S3](https://aws.amazon.com/s3/) keys for the [Lambdas](https://aws.amazon.com/lambda/)
 
 ## Resources created
 
@@ -70,9 +70,9 @@ The template creates a total of 8 resources, which are listed below:
 
 -   1 [CodePipeline](https://aws.amazon.com/codepipeline/) pipeline that retrieves the source code from the git provider, and then builds the frontend and backend
 
--   1 [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) distribution that serves the frontend, as well as an [Origin Access Identity](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html) used by the distribution to retrieve content
+-   1 [CloudFront](https://aws.amazon.com/cloudfront/) distribution that serves the frontend, as well as an [Origin Access Identity](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html) used by the distribution to retrieve content
 
--   1 (nested) [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) stack that contains the backend resources speicifed by the backend template
+-   1 (nested) [CloudFormation](https://aws.amazon.com/cloudformation/) stack that contains the backend resources speicifed by the backend template
 
 The template also creates 3 [IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html) and 1 [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html), which are described under the "Required IAM permissions" header.
 
@@ -130,7 +130,7 @@ The template creates 1 [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/l
 
 ### Bucket policy
 
-The following [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html) is attatched to the frontend [S3](https://aws.amazon.com/s3/) bucket created by the template, granting [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) read access:
+The following [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html) is attatched to the frontend [S3](https://aws.amazon.com/s3/) bucket created by the template, granting [CloudFront](https://aws.amazon.com/cloudfront/) read access:
 
 ```json
 {
@@ -153,12 +153,12 @@ The following [S3 bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev
 
 The following IAM role is used by the pipeline. It allows:
 
--   Permission to use the specified [CodeStar Connection](https://docs.aws.amazon.com/codestar-connections/latest/APIReference/Welcome.html)
+-   Permission to use the specified [CodeStar Connection](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections.html)
 -   Full access to the 3 [S3](https://aws.amazon.com/s3/) buckets created by the template
 -   Permission to start and access builds for the 2 [CodeBuild](https://aws.amazon.com/codebuild/) builders
 -   Permission to publish to the specified [SNS topic](https://aws.amazon.com/sns/)
--   Access to the backend [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) stack created by the template, and permission to work with changesets for that stack
--   Permission to pass this role on to the role creating the backend [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) changesets
+-   Access to the backend [CloudFormation](https://aws.amazon.com/cloudformation/) stack created by the template, and permission to work with changesets for that stack
+-   Permission to pass this role on to the role creating the backend [CloudFormation](https://aws.amazon.com/cloudformation/) changesets
 
 ```json
 {
@@ -256,7 +256,7 @@ The following role is used by the 2 [CodeBuild](https://aws.amazon.com/codebuild
 
 ### Backend role
 
-The last role created by the template is used to create the changeset that describes changes to the backend [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) stack.
+The last role created by the template is used to create the changeset that describes changes to the backend [CloudFormation](https://aws.amazon.com/cloudformation/) stack.
 
 The first two statements below are required. The third one, however, is what decides what controls the permissions of the backend. The permissions below are just an example of the permissions that could be used for a serverless app, but they should be changed to fit your backend. This change should ideally be done directly in the template to avoid issues with future template updates, but could be done using the [IAM](https://aws.amazon.com/iam/) console.
 
