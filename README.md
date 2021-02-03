@@ -16,6 +16,8 @@ Once these 3 things are dealt with, run the template either in the [CloudFormati
 
 After the template has finished building all the resources, you will need to point your domain to the CloudFront distribution. You will find the url to point to in the outputs section of the template. The url will be under the label _CloudFrontURL_. How you point will depend on what DNS provider you are using. If you are using [Route 53](https://aws.amazon.com/route53/), create an A record. If you are using another DNS provider, create a CNAME record instead. For more details, see [the official documentation](<https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/CNAMEs.html#CreatingCNAMEProcess:~:text=.-,Route%2053,Use%20the%20method%20provided%20by%20your%20DNS%20service%20provider%20to%20add%20a%20CNAME%20record%20for%20your%20domain.%20This%20new%20CNAME%20record%20will%20redirect%20DNS%20queries%20from%20your%20domain%20(for%20example%2C%20www.example.com)%20to%20the%20CloudFront%20domain%20name%20for%20your%20distribution%20(for%20example%2C%20d111111abcdef8.cloudfront.net).%20For%20more%20information%2C%20see%20the%20documentation%20provided%20by%20your%20DNS%20service%20provider.>).
 
+**Important note regarding stack deletion** - When deleting the stack, make sure to manually delete the nested backend stack first. If you don't do this, you could run into problems with the IAM role that was used to create the stack being deleted before the stack is deleted.
+
 ## Template parameters
 
 The template requires quite a few parameters, all of which are detailed below. Note that ARN stands for [Amazon Resource Name](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
