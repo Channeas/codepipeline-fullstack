@@ -8,7 +8,7 @@ To run this template, your project should be organized like the [example reposit
 
 Besides the above project structure, there are 4 prerequisites you need before running this template:
 
--   A [CodeStar Connection](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections.html) to the git provider where your project is hosted
+-   A [CodeStar Connection](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections.html) to the git provider where your project is hosted. You can find existing connections under [Developer Tools](https://aws.amazon.com/products/developer-tools/) > Settings > Connections
 -   A domain for serving the frontend, as well as an [ACM](https://aws.amazon.com/certificate-manager/) SSL certificate for that domain
 -   A CloudFormation template hosted on [S3](https://aws.amazon.com/s3/) that will be used for building the initial backend. The [empty stack template](empty-stack.yml) in this repository is recommended
 -   An [SNS](https://aws.amazon.com/sns/) topic that will be used for sending notifications regarding manual approval of the backend

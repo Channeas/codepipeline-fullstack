@@ -668,7 +668,7 @@ Parameters:
   # CodeStar Connection
   CodeStarConnectionARN:
     Type: String
-    Description: Enter the ARN of the CodeStar connection you want to use
+    Description: Enter the ARN of the CodeStar connection you want to use. Existing connecitons can be found under Developer Tools > Settings > Connections
 
   # Domain name used by the CloudFront distribution
   DomainName:
