@@ -6,13 +6,14 @@ This is a [CloudFormation](https://aws.amazon.com/cloudformation/) template that
 
 To run this template, your project should be organized like the [example repository](https://github.com/Channeas/cicd-fullstack-test). This means that there needs to be 2 root folders, named frontend and backend. Both those folders should contain their own [CodeBuild builspec](https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html). Please see the [example repository](https://github.com/Channeas/cicd-fullstack-test) to see how these should be structured. The backend folder should also contain a [CloudFormation template](https://aws.amazon.com/cloudformation/resources/templates/) named template.yml that describes your backend.
 
-Besides the above project structure, there are 3 prerequisites you need before running this template:
+Besides the above project structure, there are 4 prerequisites you need before running this template:
 
 -   A [CodeStar Connection](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections.html) to the git provider where your project is hosted
 -   A domain for serving the frontend, as well as an [ACM](https://aws.amazon.com/certificate-manager/) SSL certificate for that domain
 -   A CloudFormation template hosted on [S3](https://aws.amazon.com/s3/) that will be used for building the initial backend. The [empty stack template](empty-stack.yml) in this repository is recommended
+-   An [SNS](https://aws.amazon.com/sns/) topic that will be used for sending notifications regarding manual approval of the backend
 
-Once these 3 things are dealt with, run the template either in the [CloudFormation](https://aws.amazon.com/cloudformation/) console, or using the [AWS CLI](https://aws.amazon.com/cli/). The parameters required by the template are explained below.
+Once these 4 things are dealt with, run the template either in the [CloudFormation](https://aws.amazon.com/cloudformation/) console, or using the [AWS CLI](https://aws.amazon.com/cli/). The parameters required by the template are explained below.
 
 After the template has finished building all the resources, you will need to point your domain to the CloudFront distribution. You will find the url to point to in the outputs section of the template. The url will be under the label _CloudFrontURL_. How you point will depend on what DNS provider you are using. If you are using [Route 53](https://aws.amazon.com/route53/), create an A record. If you are using another DNS provider, create a CNAME record instead. For more details, see [the official documentation](<https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/CNAMEs.html#CreatingCNAMEProcess:~:text=.-,Route%2053,Use%20the%20method%20provided%20by%20your%20DNS%20service%20provider%20to%20add%20a%20CNAME%20record%20for%20your%20domain.%20This%20new%20CNAME%20record%20will%20redirect%20DNS%20queries%20from%20your%20domain%20(for%20example%2C%20www.example.com)%20to%20the%20CloudFront%20domain%20name%20for%20your%20distribution%20(for%20example%2C%20d111111abcdef8.cloudfront.net).%20For%20more%20information%2C%20see%20the%20documentation%20provided%20by%20your%20DNS%20service%20provider.>).
 
